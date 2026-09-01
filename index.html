@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Username Manager</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            font-family: Arial, sans-serif;
+
+            background: #f5f6fa;
+
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+
+            padding: 50px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 25px;
+
+            font-size: 28px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+
+            margin-bottom: 25px;
+        }
+
+        input {
+            flex: 1;
+
+            padding: 12px 14px;
+
+            border: 1px solid #ddd;
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            padding: 10px 16px;
+
+            border: none;
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            background: #2563eb;
+            color: white;
+
+            transition:
+                opacity 0.2s,
+                transform 0.1s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            overflow: hidden;
+
+            border-radius: 8px;
+        }
+
+        th,
+        td {
+            padding: 14px;
+
+            text-align: left;
+
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8fafc;
+
+            font-size: 14px;
+
+            color: #64748b;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td:last-child {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .delete-button {
+            background: #dc2626;
+        }
+
+        @media (max-width: 600px) {
+            form {
+                flex-direction: column;
+            }
+
+            form button {
+                width: 100%;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Username Manager</h1>
+
+        <form id="usernameForm">
+            <input type="text" id="usernameInput" placeholder="Enter username" required>
+
+            <button type="submit">
+                Add Username
+            </button>
+        </form>
+
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="usernameTable"></tbody>
+
+        </table>
+
+    </div>
+
+
+    <script>
+        const COOKIE_NAME = "usernames";
+
+
+        function getUsernames() {
+            const cookies = document.cookie.split("; ");
+
+            const cookie = cookies.find(row =>
+                row.startsWith(COOKIE_NAME + "=")
+            );
+
+            if (!cookie) return [];
+
+            try {
+                return JSON.parse(
+                    decodeURIComponent(cookie.split("=")[1])
+                );
+            } catch {
+                return [];
+            }
+        }
+
+
+        function saveUsernames(usernames) {
+            document.cookie =
+                COOKIE_NAME + "=" +
+                encodeURIComponent(JSON.stringify(usernames)) +
+                "; max-age=" + (60 * 60 * 24 * 365) +
+                "; path=/";
+        }
+
+
+        function deleteUsername(index) {
+            const usernames = getUsernames();
+
+            usernames.splice(index, 1);
+
+            saveUsernames(usernames);
+
+            renderTable();
+        }
+
+
+        function renderTable() {
+            const usernames = getUsernames();
+
+            const table =
+                document.getElementById("usernameTable");
+
+            table.innerHTML = "";
+
+            usernames.forEach((username, index) => {
+
+                const gtopUrl =
+                    "https://gtop100.com/MapleStory/MapleLegends-The-Old-School-MapleStory-Server-Washing-ACTUALLY-optional-Challenges-released-87398?vote=1&pingUsername=" +
+                    encodeURIComponent(username);
+
+                const topgUrl =
+                    "https://topg.org/zh/maplestory-private-servers/server-605064-" +
+                    encodeURIComponent(username);
+
+
+                table.innerHTML += `
+                <tr>
+
+                    <td>${username}</td>
+
+                    <td>
+
+                        <a
+                            href="${gtopUrl}"
+                            target="_blank"
+                        >
+                            <button type="button">
+                                GTop100
+                            </button>
+                        </a>
+
+
+                        <a
+                            href="${topgUrl}"
+                            target="_blank"
+                        >
+                            <button type="button">
+                                TopG
+                            </button>
+                        </a>
+
+
+                        <button
+                            type="button"
+                            class="delete-button"
+                            onclick="deleteUsername(${index})"
+                        >
+                            Delete
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+            });
+        }
+
+
+        document
+            .getElementById("usernameForm")
+            .addEventListener("submit", (event) => {
+
+                event.preventDefault();
+
+                const input =
+                    document.getElementById("usernameInput");
+
+                const username = input.value.trim();
+
+                if (!username) return;
+
+
+                const usernames = getUsernames();
+
+
+                if (usernames.includes(username)) {
+                    alert("Username already exists.");
+                    return;
+                }
+
+
+                usernames.push(username);
+
+                saveUsernames(usernames);
+
+
+                input.value = "";
+
+
+                renderTable();
+            });
+
+
+        renderTable();
+    </script>
+
+
+</body>
+
+</html>
